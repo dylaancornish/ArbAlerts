@@ -33,7 +33,7 @@ class SportsbookAPI:
         self,
         endpoint: str,
         params: dict = {}
-    ) -> requests.Response:
+    ) -> dict:
         url = f"{self.base_url}/{endpoint}"
 
         if 'api_key' not in params.keys():
@@ -56,6 +56,9 @@ class SportsbookAPI:
     ) -> bool:
         pass
 
+class SportsbookOddsResponse:
+    pass
+
 if __name__ == "__main__":
     with SportsbookAPI(
         base_url = 'https://api.the-odds-api.com/v4',
@@ -63,4 +66,3 @@ if __name__ == "__main__":
     ) as api:
         response = api.get('sports')
         print(response)
-    
