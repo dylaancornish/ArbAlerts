@@ -1,6 +1,7 @@
 import requests
 import os
 from dotenv import load_dotenv
+from config import Settings
 
 class SportsbookAPI:
     def __init__(
@@ -58,11 +59,3 @@ class SportsbookAPI:
 
 class SportsbookOddsResponse:
     pass
-
-if __name__ == "__main__":
-    with SportsbookAPI(
-        base_url = 'https://api.the-odds-api.com/v4',
-        api_key = os.environ['API_KEY'],
-    ) as api:
-        response = api.get('sports')
-        print(response)
