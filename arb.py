@@ -1,4 +1,8 @@
 from config import Settings
+import json
+from dataclasses import dataclass, asdict
+from datetime import datetime
+from typing import Optional
 
 settings = Settings()
 
@@ -42,22 +46,48 @@ class Game:
 
         self.best_odds = best_odds
 
+@dataclass
 class ArbOpportunity:
-    def __init__(
-        self,
-        home_team,
-        home_pct,
-        home_price,
-        away_team,
-        away_pct,
-        away_price
-    ):
-        self.home_team = home_team
-        self.home_pct = home_pct
-        self.home_price = home_price
-        self.away_team = away_team
-        self.away_pct = away_pct
-        self.away_price = away_price
+    home_team: str
+    home_pct: str
+    home_price: str
+    away_team: str
+    away_pct: str
+    away_price: str
+    home_sportsbook: str
+    away_sportsbook: str
+
+    def to_dict(self):
+        return asdict(self)
+
+    @classmethod
+    def from_json(cls, json_str):
+        return cls(**json.loads(json_str))
+
+class ArbOpportunitySet:
+    def __init__(self, opportunities: Optional[list[ArbOpportunity]]=None):
+        self.opportunities = []
+        if opportunities is not None:
+            print('opportunities is not none')
+            self.opportunities = opportunities
+
+    def add_opportunities(self, opportunities: list[ArbOpportunity]):
+        self.opportunities.extend(opportunities)
+
+    def to_json(self):
+        return json.dumps([opportunity.to_dict() for opportunity in self.opportunities])
+
+    def save_to_file(self, filename=f"arb_{datetime.now()}.json"):
+        with open(filename, mode="w") as f:
+            f.write(self.to_json())
+
+    @classmethod
+    def load_from_file(cls, filename):
+        with open(filename, mode="r") as f:
+            opportunity_json = json.load(f)
+        opportunities = [ArbOpportunity(**ao) for ao in opportunity_json]
+        print(opportunities)
+        return cls(opportunities)
 
 class OddsParser:
     def __init__(
@@ -84,13 +114,25 @@ class OddsParser:
                 home_price = game[home_team][0]
                 away_price = game[away_team][0]
 
+                if (home_price == 0) or (away_price == 0):
+                    continue
+
                 home_pct = (1 / home_price)
                 away_pct = (1 / away_price)
                 arb_percent = home_pct + away_pct
-                print(f"{arb_percent}")
+
                 if arb_percent < 1.0:
+                    home_sportsbook = game[home_team][1]
+                    away_sportsbook = game[away_team][1]
                     arb_opportunity = ArbOpportunity(
-                        home_team, home_pct, home_price, away_team, away_pct, away_price
+                        home_team=home_team,
+                        home_pct=home_pct,
+                        home_price=home_price,
+                        away_team=away_team,
+                        away_pct=away_pct,
+                        away_price=away_price,
+                        home_sportsbook=home_sportsbook,
+                        away_sportsbook=away_sportsbook
                     )
                     self.opportunities.append(arb_opportunity)
                     print(f"Bet {home_pct} of a unit on {game[home_team][1]}")

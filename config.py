@@ -7,9 +7,10 @@ class Settings:
         # "americanfootball_ncaaf",
         # "baseball_ncaa",
         "basketball_nba",
-        # "basketball_ncaa",
-        # "basketball_wncaab",
-        # "icehockey_nhl",
+        "basketball_ncaab",
+        "basketball_wncaab",
+        "icehockey_nhl",
+        # "soccer_epl",
     ]
     MARKETS = [
         "h2h"
