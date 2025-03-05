@@ -46,23 +46,70 @@ class Game:
 
         self.best_odds = best_odds
 
-@dataclass
 class ArbOpportunity:
-    home_team: str
-    home_pct: str
-    home_price: str
-    away_team: str
-    away_pct: str
-    away_price: str
-    home_sportsbook: str
-    away_sportsbook: str
+    def __init__(
+        self,
+        home_team,
+        home_pct,
+        home_price,
+        away_team,
+        away_pct,
+        away_price,
+        home_sportsbook,
+        away_sportsbook,
+        home_link,
+        away_link,
+        **kwargs
+    ):
+        self.home_team = home_team
+        self.home_pct = home_pct
+        self.home_price = home_price 
+        self.away_team = away_team 
+        self.away_pct = away_pct 
+        self.away_price = away_price 
+        self.home_sportsbook = home_sportsbook
+        self.away_sportsbook = away_sportsbook
+
+        self.home_link = home_link
+        self.away_link = away_link
+
+        self.calculate_metrics()
 
     def to_dict(self):
-        return asdict(self)
+        import inspect
+        
+        return {
+            k: v for k, v in inspect.getmembers(self)
+            if not k.startswith('_') and not inspect.ismethod(v)
+        }
 
     @classmethod
     def from_json(cls, json_str):
         return cls(**json.loads(json_str))
+    
+    def calculate_metrics(self):
+        self.total_probability = self.home_pct + self.away_pct
+        self.profit_pct = (1 - self.total_probability) / self.total_probability * 100
+
+        total_stake = 100
+        self.home_stake = round(self.home_pct * total_stake / self.total_probability, 2)
+        self.away_stake = round(self.away_pct * total_stake / self.total_probability, 2)
+
+        self.expected_return = total_stake * (1 + self.profit_pct/100)
+        self.expected_profit = self.expected_return - total_stake
+
+        self.home_stake_rounded = round(self.home_stake)
+        self.away_stake_rounded = round(self.away_stake)
+        self.rounded_total_stake = self.home_stake_rounded + self.away_stake_rounded
+
+        self.home_outcome_rounded = self.home_stake_rounded * self.home_price
+        self.away_outcome_rounded = self.away_stake_rounded * self.away_price
+        
+        self.min_profit_rounded = min(
+            self.home_outcome_rounded - self.rounded_total_stake,
+            self.away_outcome_rounded - self.rounded_total_stake
+        )
+        self.profit_pct_rounded = (self.min_profit_rounded / self.rounded_total_stake) * 100
 
 class ArbOpportunitySet:
     def __init__(self, opportunities: Optional[list[ArbOpportunity]]=None):
@@ -86,8 +133,11 @@ class ArbOpportunitySet:
         with open(filename, mode="r") as f:
             opportunity_json = json.load(f)
         opportunities = [ArbOpportunity(**ao) for ao in opportunity_json]
-        print(opportunities)
         return cls(opportunities)
+
+    def pretty_print_opportunities(self):
+        if self.opportunities is None:
+            return ""
 
 class OddsParser:
     def __init__(
@@ -132,7 +182,9 @@ class OddsParser:
                         away_pct=away_pct,
                         away_price=away_price,
                         home_sportsbook=home_sportsbook,
-                        away_sportsbook=away_sportsbook
+                        away_sportsbook=away_sportsbook,
+                        home_link='',
+                        away_link=''
                     )
                     self.opportunities.append(arb_opportunity)
                     print(f"Bet {home_pct} of a unit on {game[home_team][1]}")

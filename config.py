@@ -18,3 +18,6 @@ class Settings:
     API_KEY = os.environ['API_KEY']
     ODDS_FORMAT = 'decimal'
     DATE_FORMAT = 'iso'
+
+    MAILGUN_API_KEY = os.environ['MAILGUN_API_KEY']
+    INCLUDE_LINKS = "true"
