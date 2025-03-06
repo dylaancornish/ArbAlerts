@@ -1,0 +1,7 @@
+{
+    "default_user": {
+      "email": "redacted",
+      "schedule": "minutely", 
+      "min_profit_pct": "1.08"
+    }
+  }
