@@ -8,7 +8,7 @@ def send_mailgun_email(
     to_email: str, 
     subject: str = "Arbitrage Alerts",
     mailgun_api_key: str = None,
-    mailgun_domain: str = "sandbox80bd2a9b2b934bafa116fbbd1f276f16.mailgun.org"
+    mailgun_domain: str = None
 ):
     if not mailgun_api_key:
         mailgun_api_key = os.getenv('MAILGUN_API_KEY')
